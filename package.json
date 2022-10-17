@@ -9,9 +9,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/uuid4": "^2.0.0",
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "uuid4": "^2.0.3"
   }
 }
