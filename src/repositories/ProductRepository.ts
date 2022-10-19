@@ -7,7 +7,6 @@ import DifficultyLevel from "../product/DifficultyLevel";
 import VideoGame from "../product/VideoGame";
 import BoardGame from "../product/BoardGame";
 
-
 type ProductRow = [number, string, number, string, string, string, string | null]
 
 class ProductRepository{

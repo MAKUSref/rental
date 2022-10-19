@@ -26,6 +26,10 @@ import ProductRepository from "./src/repositories/ProductRepository";
 const pr = new ProductRepository();
 pr.get(1).then((x)=>{
   let y = x as Movie;
-  console.log(y.title);
-})
+  console.log(y);
+}).catch((err) => {
+  console.log(err);
+});
+
+
 

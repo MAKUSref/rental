@@ -18,7 +18,7 @@ CREATE TABLE clients (
 
 
 CREATE TABLE addresses (
-    client_pid INT NOT NULL,
+    client_pid character varying(255) NOT NULL,
     city character varying(255) NOT NULL,
     street character varying(255) NOT NULL,
     house_number character varying(255) NOT NULL,
@@ -30,20 +30,20 @@ CREATE TABLE addresses (
 
 CREATE TABLE rents (
     rent_id INT NOT NULL,
-    client_pid INT NOT NULL,
+    client_pid character varying(255) NOT NULL,
     product_id INT NOT NULL,
     rent_cost FLOAT,
     begin_time DATE NOT NULL DEFAULT CURRENT_DATE,
-    end_time DATE
-    PRIMARY KEY(rent_id)
+    end_time DATE,
+    PRIMARY KEY(rent_id),
     CONSTRAINT fk_clients
         FOREIGN KEY(client_pid)
-            REFERENCES clients(client_pid)
+            REFERENCES clients(client_pid),
 
     CONSTRAINT fk_products
         FOREIGN KEY(product_id)
             REFERENCES products(product_id)
-)
+);
 
 
 INSERT INTO 
