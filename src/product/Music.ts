@@ -3,8 +3,8 @@ import Product from "./Product";
 const MUSIC_MULTIPLIER = 1.45;
 
 class Music extends Product {
-  constructor(basePrice: number, title: string, category: string) {
-    super(basePrice, title, category);
+  constructor(serialNumber: string, basePrice: number, title: string, category: string) {
+    super(serialNumber, basePrice, title, category);
   }
 
   getProductInfo(): string {

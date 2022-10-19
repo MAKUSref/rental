@@ -4,12 +4,13 @@ abstract class Product {
   private _basePrice: number;
   private _title: string;
   private _category: string;
-  private _serialNumber: string = uuid4();
+  private _serialNumber: string;
 
-  constructor(basePrice: number, title: string, category: string) {
+  constructor(serialNumber: string, basePrice: number, title: string, category: string) {
     this._basePrice = basePrice;
     this._title = title;
     this._category = category;
+    this._serialNumber = serialNumber;
   }
 
   // getters

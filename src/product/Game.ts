@@ -4,8 +4,8 @@ import DifficultyLevel from "./DifficultyLevel";
 abstract class Game extends Product {
   private _difficultyLevel: DifficultyLevel;
 
-  constructor (basePrice: number, title: string, category: string, difficultyLevel: DifficultyLevel) {
-    super(basePrice, title, category);
+  constructor (serialNumber: string, basePrice: number, title: string, category: string, difficultyLevel: DifficultyLevel) {
+    super(serialNumber, basePrice, title, category);
     this._difficultyLevel = difficultyLevel;
   }
 
