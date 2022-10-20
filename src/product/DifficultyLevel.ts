@@ -1,8 +1,8 @@
 enum DifficultyLevel {
-  Easy = 'easy',
-  Medium = 'medium',
-  Hard = 'hard',
-  VeryHard = 'very-hard'
+  Easy = 'Easy',
+  Medium = 'Medium',
+  Hard = 'Hard',
+  VeryHard = 'VeryHard'
 }
 
 export default DifficultyLevel;

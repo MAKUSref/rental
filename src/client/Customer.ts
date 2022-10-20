@@ -1,14 +1,14 @@
 import uuid4 from "uuid4";
 import Address from "./Address";
-import ClientType from "./clientType/ClientType";
-import Default from "./clientType/Default";
+import CustomerType from "./CustomerType/CustomerType";
+import Default from "./CustomerType/Default";
 
-abstract class Client {
+class Customer {
   private _name: string;
   private _surname: string;
   private _pid: string;
   private _address: Address;
-  private _clientType: ClientType = new Default();
+  private _CustomerType: CustomerType = new Default();
 
   constructor (name: string, surname: string, pid: string, address: Address) {
     this._name = name;
@@ -23,17 +23,17 @@ abstract class Client {
   get pid() { return this._pid; }
   get address() { return this._address; }
   
-  get clientInfo() {
-    return `${this._name} ${this._surname}, ${this._address.addressInfo}, ${this._clientType.getTypeInfo?.()}`;
+  get CustomerInfo() {
+    return `${this._name} ${this._surname}, ${this._address.addressInfo}, ${this._CustomerType.getTypeInfo?.()}`;
   }
 
   get maxProducts() {
-    return this._clientType.getMaxProducts?.();
+    return this._CustomerType.getMaxProducts?.();
   }
 
   // setters
-  set clientType(clientType: ClientType) {
-    this._clientType = clientType;
+  set CustomerType(CustomerType: CustomerType) {
+    this._CustomerType = CustomerType;
   }
 
   set name(name: string) {
@@ -46,8 +46,8 @@ abstract class Client {
   
   // public
   applyDiscount(price: number): number {
-    return this._clientType.applyDiscount?.(price) ?? price;
+    return this._CustomerType.applyDiscount?.(price) ?? price;
   }
 }
 
-export default Client;
+export default Customer;

@@ -1,4 +1,5 @@
 import Product from "../product/Product";
+import { Pool } from 'postgres-pool';
 import { IRepository } from "./Repository.type";
 import { Client } from "ts-postgres";
 import Movie from "../product/Movie";
@@ -6,66 +7,175 @@ import Music from "../product/Music";
 import DifficultyLevel from "../product/DifficultyLevel";
 import VideoGame from "../product/VideoGame";
 import BoardGame from "../product/BoardGame";
+import Game from "../product/Game";
 
-type ProductRow = [number, string, number, string, string, string, string | null]
 
-class ProductRepository{
+export type ProductRow = [string, number, string, string, string, string | null];
+type ProductRowExtended = [number, string, number, string, string, string, string | null];
+
+class ProductRepository {
     items: Product[] = [];
 
-    rowToProduct(row: ProductRow){
+    static rowToProduct(row: ProductRow): Product | undefined {
         let newOb: Product | undefined;
-        if(row[1] === 'Movie'){
-            newOb = new Movie(row[5], row[2], row[3], row[4])
-        }else if(row[1] === 'Music'){
-            newOb = new Music(row[5], row[2], row[3], row[4])
-        }else if(row[1] === 'BoardGame' && row[6]){
-            const difficulty: DifficultyLevel = new (<any>DifficultyLevel)[row[6]]; 
-            newOb = new BoardGame(row[5], row[2], row[3], row[4], difficulty)
-        }else if(row[1] === 'VideoGame' && row[6]){
-            const difficulty: DifficultyLevel = new (<any>DifficultyLevel)[row[6]]; 
-            newOb = new VideoGame(row[5], row[2], row[3], row[4], difficulty)
+        if (row[0] === 'Movie') {
+            newOb = new Movie(row[4], row[1], row[2], row[3])
+        } else if (row[0] === 'Music') {
+            newOb = new Music(row[4], row[1], row[2], row[3])
+        } else if (row[0] === 'BoardGame' && row[5]) {
+
+            const difficulty: DifficultyLevel = DifficultyLevel[row[5] as keyof typeof DifficultyLevel]
+            newOb = new BoardGame(row[4], row[1], row[2], row[3], difficulty)
+        } else if (row[0] === 'VideoGame' && row[5]) {
+            const difficulty: DifficultyLevel = DifficultyLevel[row[5] as keyof typeof DifficultyLevel]
+            newOb = new VideoGame(row[4], row[1], row[2], row[3], difficulty)
         }
         return newOb;
     }
 
-    async get(index: number) {
-        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
-        client.connect();
+    static productToRow(product: Product): ProductRow {
 
-        return new Promise((resolve, reject)=>{
-            client.query('SELECT * FROM products;')
-            .then(results => {
-                let productObject = this.rowToProduct(results.rows[index] as ProductRow);   
-                resolve(productObject);
-            }).catch((e)=>{
-                reject(`error connecting to db: ${e}`)
-            })
-            .finally(()=>{
+        return [product.constructor.name, product.basePrice, product.title, product.category, product.serialNumber, null]
+    }
+
+    static gameToRow(game: Game): ProductRow {
+        return [game.constructor.name, game.basePrice, game.title, game.category, game.serialNumber, game.difficultyLevel.toString()]
+    }
+
+    static async get(index: number): Promise<Product> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products WHERE product_id = $1;', [index])
+                .then(results => {
+                    if(results.rows.length < 1)
+                    reject('no item found')
+                    let productObject = this.rowToProduct(results?.rows[0]?.slice(1) as ProductRow);
+                    if (productObject) {
+                        resolve(productObject);
+                    } else {
+                        reject('there was a problem in database')
+                    }
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
+        })
+
+    }
+
+    static async add(item: Product): Promise<void> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        let values: ProductRow;
+
+        if ((item as Game).difficultyLevel) {
+            values = ProductRepository.gameToRow(item as Game);
+        } else {
+            values = ProductRepository.productToRow(item);
+        }
+        await client.connect().catch(e => {
+            console.log(e);
+        });
+
+        return new Promise(() => {
+            console.log(values);
+
+            client.query('INSERT INTO products (product_type, base_price, title, category, serialNumber, difficulty_level) VALUES ($1, $2, $3, $4, $5, $6);', values).catch(err => {
+                console.error(err);
+            }).finally(() => {
                 client.end();
             })
+        });
+
+    }
+
+
+    static async remove(item: Product): Promise<void> {
+        const pool = new Pool({host: 'localhost', database: 'rental', user: 'postgres', password: 'postgres' })
+        const query1 = `
+            SELECT product_id FROM products WHERE serialNumber = $1;
+            `
+        const query2 = `
+            DELETE FROM products WHERE product_id = $1;
+            
+            `        
+        try{
+            await pool.query('BEGIN;');
+            let id = await pool.query(query1, [item.serialNumber]);
+
+            id =  id.rows[0].product_id;
+            console.log([id]);
+            
+            await pool.query(query2, [id]);
+            await pool.query('COMMIT;');
+
+        }catch{
+            
+            await pool.query('ROLLBACK;');
+        }
+        await pool.end();
+
+    }
+    static async size(): Promise<number> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products;')
+                .then(results => {
+                        resolve(results.rows.length);
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
         })
-        
     }
-    add(item: Product): void {
-        this.items.push(item)
-    }
-    remove(item: Product): void {
-        this.items.filter(arrayItem => arrayItem !== item)
+    static async getAll(): Promise<Product[]> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products;')
+                .then(results => {
 
-    }
-    size(): number {
-        return this.items.length;
-    }
-    getAll(): Product[] {
-        return this.items;
+                    let productList = results.rows.map((productRow)=>ProductRepository.rowToProduct(productRow.slice(1) as ProductRow));
+                    productList = productList.filter((potentialProduct: Product | undefined)=>potentialProduct != undefined);
+                    resolve(productList as Product[]);
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
+        })
     }
 
-    findBy(filterFunction: (item: Product) => boolean) {
-        return this.items.filter(filterFunction)
+    static async findBy(filterFunction: (item: Product) => boolean) {
+        this.getAll().then(allProducts=>{
+            return allProducts.filter(filterFunction)
+        })
     }
 
-    findBySerialNumber(number: string) {
-        return this.items.filter(product => product.serialNumber === number)
+    static async findBySerialNumber(number: string) {
+        return this.findBy(product => product.serialNumber === number)
+    }
+
+    static async getAllRawData(): Promise<ProductRowExtended[]> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products;')
+                .then(results => {
+                    resolve(results.rows as ProductRowExtended[]);
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
+        })
     }
 }
 
