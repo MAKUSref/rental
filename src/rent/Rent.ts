@@ -10,11 +10,12 @@ class Rent {
   private _client: Client;
   private _product: Product;
 
-  constructor(rentId: number, client: Client, product: Product, beginTime: Date = new Date()) {
+  constructor(rentId: number, client: Client, product: Product, beginTime: Date = new Date(), endTime = undefined) {
     this._rentId = rentId;
     this._client = client;
     this._product = product;
     this._beginTime = beginTime;
+    this._endTime = endTime;
   }
 
   // getters
@@ -45,6 +46,10 @@ class Rent {
   // public
   endRent(): void {
     this._endTime = new Date();
+  }
+
+  getEndTime(): Date | undefined {
+    return this._endTime;
   }
 }
 

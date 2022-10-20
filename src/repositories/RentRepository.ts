@@ -25,8 +25,10 @@ type RentRow = [
 class RentRepository {
   items: Rent[] = [];
 
-  get(index: number): Rent | null {
-    return this.items[index] ? this.items[index] : null;
+  static async get(index: number): Promise<Rent[]> {
+    const rentArr: Rent[] = await RentRepository.getAll();
+
+    return rentArr.filter((rent: Rent) => rent.rentId === index);
   }
   
   static add(item: Rent): void {
@@ -35,7 +37,12 @@ class RentRepository {
       user: "postgres",
       password: "postgres",
     });
+
+    client.connect();
+
+    // client.query()
   }
+
   remove(item: Rent): void {
     this.items.filter((arrayItem) => arrayItem !== item);
   }
@@ -61,6 +68,30 @@ class RentRepository {
           client.end();
         })
     });
+  }
+
+  static async setEndRent(rent: Rent) {
+    if (!rent.getEndTime()) {
+      rent.endRent();
+
+      const client = new Client({
+        database: "rental",
+        user: "postgres",
+        password: "postgres",
+      });
+  
+      await client.connect();
+
+      const query = `UPDATE rents SET end_time = now() WHERE rent_id = $1`;
+
+      client.query(query, [rent.rentId])
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          client.end();
+        });
+    }
   }
 
   static async getAll(): Promise<Rent[]> {

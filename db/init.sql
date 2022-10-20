@@ -92,3 +92,8 @@ INSERT INTO
 VALUES
     ('987654526', 1, 100.5, now()),
     ('987654526', 2, 200.0, now());
+
+INSERT INTO
+    rents (customer_pid, product_id, rent_cost, begin_time)
+VALUES
+    ('123456787', 4, 60.2, now(), now());
