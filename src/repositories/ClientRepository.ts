@@ -45,7 +45,6 @@ class CustomerRepository {
         const cr: CustomerRow = [customer.name, customer.surname, customer.pid, customer.CustomerType?.constructor.name as CustomerType]
         const ar: AddressRow = [customer.pid, customer.address.city, customer.address.street, customer.address.number]
         return [cr, ar]
-        return [customer.name, customer.surname, customer.pid, customer.CustomerType?.constructor.name as CustomerType, customer.pid, customer.address.city, customer.address.street, customer.address.number]
     }
 
     static async get(index: number): Promise<Customer> {
@@ -80,7 +79,7 @@ class CustomerRepository {
     static async remove(item: Customer): Promise<void> {
         const pool = new Pool({host: 'localhost', database: 'rental', user: 'postgres', password: 'postgres' })
         const query1 = `
-            DELETE FROM adresses WHERE customer_pid = $1;
+            DELETE FROM addresses WHERE customer_pid = $1;
             `
         const query2 = `
             DELETE FROM customers WHERE customer_pid = $1;
