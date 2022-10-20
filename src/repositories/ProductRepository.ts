@@ -1,4 +1,5 @@
 import Product from "../product/Product";
+import { Pool } from 'postgres-pool';
 import { IRepository } from "./Repository.type";
 import { Client } from "ts-postgres";
 import Movie from "../product/Movie";
@@ -45,11 +46,11 @@ class ProductRepository {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         await client.connect();
         return new Promise((resolve, reject) => {
-            client.query('SELECT * FROM products WHERE id = $1;', [index])
+            client.query('SELECT * FROM products WHERE product_id = $1;', [index])
                 .then(results => {
-                    console.log(results);
-
-                    let productObject = this.rowToProduct(results.rows[0].slice(1) as ProductRow);
+                    if(results.rows.length < 1)
+                    reject('no item found')
+                    let productObject = this.rowToProduct(results?.rows[0]?.slice(1) as ProductRow);
                     if (productObject) {
                         resolve(productObject);
                     } else {
@@ -91,10 +92,32 @@ class ProductRepository {
     }
 
 
-    // static remove(item: Product): void {
-    //     ProductRepository.items.filter(arrayItem => arrayItem !== item)
+    static async remove(item: Product): Promise<void> {
+        const pool = new Pool({host: 'localhost', database: 'rental', user: 'postgres', password: 'postgres' })
+        const query1 = `
+            SELECT product_id FROM products WHERE serialNumber = $1;
+            `
+        const query2 = `
+            DELETE FROM products WHERE product_id = $1;
+            
+            `        
+        try{
+            await pool.query('BEGIN;');
+            let id = await pool.query(query1, [item.serialNumber]);
 
-    // }
+            id =  id.rows[0].product_id;
+            console.log([id]);
+            
+            await pool.query(query2, [id]);
+            await pool.query('COMMIT;');
+
+        }catch{
+            
+            await pool.query('ROLLBACK;');
+        }
+        await pool.end();
+
+    }
     static async size(): Promise<number> {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         await client.connect();
@@ -129,30 +152,14 @@ class ProductRepository {
         })
     }
 
-    static async getAllRawData(): Promise<ProductRowExtended[]> {
-        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
-        await client.connect();
-        return new Promise((resolve, reject) => {
-            client.query('SELECT * FROM products;')
-                .then(results => {
-                    resolve(results.rows as ProductRowExtended[]);
-                }).catch((e) => {
-                    reject(`error connecting to db: ${e}`)
-                })
-                .finally(() => {
-                    client.end();
-                })
-        })
-    }
-
     static async findBy(filterFunction: (item: Product) => boolean) {
-        ProductRepository.getAll().then(allProducts=>{
+        this.getAll().then(allProducts=>{
             return allProducts.filter(filterFunction)
         })
     }
 
     static async findBySerialNumber(number: string) {
-        return ProductRepository.findBy(product => product.serialNumber === number)
+        return this.findBy(product => product.serialNumber === number)
     }
 }
 

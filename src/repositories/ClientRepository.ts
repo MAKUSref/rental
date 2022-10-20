@@ -47,9 +47,13 @@ class CustomerRepository {
         return [cr, ar]
     }
 
-    static async get(index: number): Promise<Customer> {
+    static async get(index: number): Promise<Customer | null> {
         const x = await this.getAll();
-        return x[index]
+        try{
+            return x[index];
+        }catch{
+            return null;
+        }
     }
 
     static async add(item: Customer): Promise<void> {
