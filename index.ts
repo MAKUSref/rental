@@ -6,6 +6,7 @@ import Movie from "./src/product/Movie";
 import VideoGame from "./src/product/VideoGame";
 import CustomerRepository from "./src/repositories/ClientRepository";
 import ProductRepository from "./src/repositories/ProductRepository";
+import RentRepository from "./src/repositories/RentRepository";
 
 // async function main() {
 //   const client = new Client({database: 'rental', user: 'postgres', password: 'postgres'});
@@ -28,11 +29,11 @@ import ProductRepository from "./src/repositories/ProductRepository";
 // }
 // main();
 
-const pr = new ProductRepository();
-const cr = new CustomerRepository();
+// const pr = new ProductRepository();
+// const cr = new CustomerRepository();
 
-const a = new Address('asds', 'ads', 'dsa')
-const c = new Customer('jan', 'aaaaa', 'poiuytyuio', a);
+// const a = new Address('asds', 'ads', 'dsa')
+// const c = new Customer('jan', 'aaaaa', 'poiuytyuio', a);
 
 // pr.get(1).then((x)=>{
 //   let y = x as Movie;
@@ -43,5 +44,9 @@ const c = new Customer('jan', 'aaaaa', 'poiuytyuio', a);
   // })
 // console.log(c.CustomerType?.constructor.name);
 
-  cr.add(c);
+  // cr.add(c);
 
+
+const rent = new RentRepository();
+
+rent.getAll();

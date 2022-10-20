@@ -29,7 +29,7 @@ CREATE TABLE addresses (
 );
 
 CREATE TABLE rents (
-    rent_id INT NOT NULL,
+    rent_id INT GENERATED ALWAYS AS IDENTITY,
     customer_pid character varying(255) NOT NULL,
     product_id INT NOT NULL,
     rent_cost FLOAT,
@@ -86,3 +86,9 @@ VALUES
     ('465458678', 'Warszawa' ,'Emilii Plater', '15' ),
     ('123456787', 'Łódź', 'Wróblewskiego', '5'),
     ('654218871', 'Łódź', 'Wólczańska', '51a');
+
+INSERT INTO
+    rents (customer_pid, product_id, rent_cost, begin_time)
+VALUES
+    ('987654526', 1, 100.5, now()),
+    ('987654526', 2, 200.0, now());
