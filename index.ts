@@ -50,3 +50,5 @@ import RentRepository from "./src/repositories/RentRepository";
 const rent = new RentRepository();
 
 rent.getAll();
+
+// RentRepository.size();

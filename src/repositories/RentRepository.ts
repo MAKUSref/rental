@@ -1,6 +1,10 @@
 import Rent from "../rent/Rent";
 import { IRepository } from "./Repository.type";
 import { Client } from "ts-postgres";
+import CustomerRepository from "./ClientRepository";
+import Customer from "../client/Customer";
+import Product from "../product/Product";
+import ProductRepository from "./ProductRepository";
 
 type rent_id = number;
 type customer_pid = string;
@@ -30,9 +34,30 @@ class RentRepository {
   remove(item: Rent): void {
     this.items.filter((arrayItem) => arrayItem !== item);
   }
-  size(): number {
-    return this.items.length;
+  
+  static async size(): Promise<number> {
+    const client = new Client({
+      database: "rental",
+      user: "postgres",
+      password: "postgres",
+    });
+
+    await client.connect();
+
+    return new Promise((resolve, reject) => {
+      client.query('SELECT * FROM rents;')
+        .then(async (result) => {
+          console.log(result);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+        .finally(() => {
+          client.end();
+        })
+    });
   }
+
   async getAll(): Promise<any> {
     const client = new Client({
       database: "rental",
@@ -48,11 +73,16 @@ class RentRepository {
 
       client
         .query(query)
-        .then((result) => {
+        .then(async (result) => {
           const rentsRows: RentRow[] = result.rows as RentRow[];
-          console.log(rentsRows);
-          
-          
+
+          const preperedRents = rentsRows.map(async (rentRow: RentRow): Promise<any> => {
+            const client = await CustomerRepository.findByPersonalID(rentRow[1] as customer_pid);
+            console.log(rentRow[1]);
+            console.log(client);
+            
+            // return new Rent();
+          } );
         })
         .catch((err) => {
           console.log(err);

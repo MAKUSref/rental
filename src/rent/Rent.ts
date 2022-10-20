@@ -5,15 +5,16 @@ const SECONDS_IN_DAY = 86400;
 
 class Rent {
   private _id: number;
-  private _beginTime: number = Date.now();
+  private _beginTime: number;
   private _endTime?: number;
   private _client: Client;
   private _product: Product;
 
-  constructor(id: number, client: Client, product: Product) {
+  constructor(id: number, client: Client, product: Product, beginTime: number = Date.now()) {
     this._id = id;
     this._client = client;
     this._product = product;
+    this._beginTime = beginTime;
   }
 
   // getters
