@@ -1,8 +1,8 @@
 import Rent from "../rent/Rent";
 import { IRepository } from "./Repository.type";
 import { Client } from "ts-postgres";
-import CustomerRepository from "./ClientRepository";
-import Customer from "../client/Customer";
+import CustomerRepository from "./CustomerRepository";
+import Customer from "../customer/Customer";
 import Product from "../product/Product";
 import ProductRepository, { ProductRow } from "./ProductRepository";
 

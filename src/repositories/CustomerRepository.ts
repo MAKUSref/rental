@@ -1,11 +1,11 @@
 import { Client } from "ts-postgres";
 import { Pool } from 'postgres-pool';
-import Address from "../client/Address";
-import Customer from "../client/Customer";
-import Bronze from "../client/CustomerType/Bronze";
-import Default from "../client/CustomerType/Default";
-import Gold from "../client/CustomerType/Gold";
-import Silver from "../client/CustomerType/Silver";
+import Address from "../customer/Address";
+import Customer from "../customer/Customer";
+import Bronze from "../customer/CustomerType/Bronze";
+import Default from "../customer/CustomerType/Default";
+import Gold from "../customer/CustomerType/Gold";
+import Silver from "../customer/CustomerType/Silver";
 import { IRepository } from "./Repository.type";
 
 
