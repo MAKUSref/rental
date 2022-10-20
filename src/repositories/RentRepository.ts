@@ -5,6 +5,7 @@ import CustomerRepository from "./CustomerRepository";
 import Customer from "../customer/Customer";
 import Product from "../product/Product";
 import ProductRepository, { ProductRow } from "./ProductRepository";
+import { Pool } from "postgres-pool";
 
 type rent_id = number;
 type customer_pid = string;
@@ -23,7 +24,6 @@ type RentRow = [
 ];
 
 class RentRepository {
-  items: Rent[] = [];
 
   static async get(index: number): Promise<Rent[]> {
     const rentArr: Rent[] = await RentRepository.getAll();
@@ -31,20 +31,49 @@ class RentRepository {
     return rentArr.filter((rent: Rent) => rent.rentId === index);
   }
   
-  static add(item: Rent): void {
+  static async add(rent: Rent) {
+    const pool = new Pool({host: 'localhost', database: 'rental', user: 'postgres', password: 'postgres' });
+
+    const query = `
+      INSERT INTO
+          rents (customer_pid, product_id, rent_cost, begin_time)
+      VALUES
+          ($1, $2, $3, $4);
+    `;
+
+    const getLastProductId = `SELECT rent_id FROM rents ORDER BY rent_id DESC LIMIT 1;`;
+
+    try {
+      pool.query('BEGIN;');
+      const res = await pool.query(getLastProductId);
+      const index = res.rows[0].product_id + 1;
+      pool.query(query, [rent.customer.pid, index, rent.rentCost, rent.beginTime]);
+      pool.query('COMMIT;');
+    } catch {
+      pool.query('ROLLBACK;');
+    }
+
+    pool.end();
+  }
+
+  static async remove(rent: Rent) {
     const client = new Client({
       database: "rental",
       user: "postgres",
       password: "postgres",
     });
 
-    client.connect();
+    await client.connect();
 
-    // client.query()
-  }
+    const deleteRentQuery = `DELETE FROM rents WHERE rent_id = $1;`;
 
-  remove(item: Rent): void {
-    this.items.filter((arrayItem) => arrayItem !== item);
+    client.query(deleteRentQuery, [rent.rentId])
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        client.end();
+      });
   }
   
   static async size(): Promise<number> {
