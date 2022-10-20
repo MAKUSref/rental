@@ -44,11 +44,11 @@ class ProductRepository {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         await client.connect();
         return new Promise((resolve, reject) => {
-            client.query('SELECT * FROM products;')
+            client.query('SELECT * FROM products WHERE id = $1;', [index])
                 .then(results => {
                     console.log(results);
 
-                    let productObject = this.rowToProduct(results.rows[index].slice(1) as ProductRow);
+                    let productObject = this.rowToProduct(results.rows[0].slice(1) as ProductRow);
                     if (productObject) {
                         resolve(productObject);
                     } else {
@@ -94,19 +94,48 @@ class ProductRepository {
         this.items.filter(arrayItem => arrayItem !== item)
 
     }
-    size(): number {
-        return this.items.length;
+    async size(): Promise<number> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products;')
+                .then(results => {
+                        resolve(results.rows.length);
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
+        })
     }
-    getAll(): Product[] {
-        return this.items;
+    async getAll(): Promise<Product[]> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products;')
+                .then(results => {
+
+                    let productList = results.rows.map((productRow)=>this.rowToProduct(productRow.slice(1) as ProductRow));
+                    productList = productList.filter((potentialProduct: Product | undefined)=>potentialProduct != undefined);
+                    resolve(productList as Product[]);
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
+        })
     }
 
     findBy(filterFunction: (item: Product) => boolean) {
-        return this.items.filter(filterFunction)
+        this.getAll().then(allProducts=>{
+            return allProducts.filter(filterFunction)
+        })
     }
 
     findBySerialNumber(number: string) {
-        return this.items.filter(product => product.serialNumber === number)
+        return this.findBy(product => product.serialNumber === number)
     }
 }
 

@@ -1,10 +1,10 @@
-import ClientType from "./ClientType";
+import CustomerType from "./CustomerType";
 
 const MAX_PRODUCTS_NUMBER = 7;
 const TYPE_NAME = 'Bronze';
 const DISCOUNT = 0.9;
 
-class Bronze extends ClientType {
+class Bronze extends CustomerType {
   applyDiscount(price: number): number {
     return price * DISCOUNT;
   }

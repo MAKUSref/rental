@@ -1,4 +1,4 @@
-import Client from "../client/Client";
+import Client from "../client/Customer";
 import Product from "../product/Product";
 
 const SECONDS_IN_DAY = 86400;

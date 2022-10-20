@@ -9,41 +9,40 @@ CREATE TABLE products (
     PRIMARY KEY(product_id)
 );
 
-CREATE TABLE clients (
-    client_name character varying(255) NOT NULL,
-    client_surname character varying(255) NOT NULL,
-    client_pid character varying(255) NOT NULL,
-    PRIMARY KEY(client_pid)
+CREATE TABLE customers (
+    customer_name character varying(255) NOT NULL,
+    customer_surname character varying(255) NOT NULL,
+    customer_pid character varying(255) NOT NULL,
+    customer_type  character varying(255),
+    PRIMARY KEY(customer_pid)
 );
-
 
 CREATE TABLE addresses (
-    client_pid INT NOT NULL,
+    customer_pid character varying(255) NOT NULL,
     city character varying(255) NOT NULL,
     street character varying(255) NOT NULL,
-    house_number character varying(255) NOT NULL,
-    CONSTRAINT fk_clients
-        FOREIGN KEY(client_pid)
-            REFERENCES clients(client_pid)
-);
+    house_number  character varying(255) NOT NULL,
+    CONSTRAINT fk_customers
+    FOREIGN KEY(customer_pid)
+        REFERENCES customers(customer_pid)
 
+);
 
 CREATE TABLE rents (
     rent_id INT NOT NULL,
-    client_pid INT NOT NULL,
+    customer_pid character varying(255) NOT NULL,
     product_id INT NOT NULL,
     rent_cost FLOAT,
     begin_time DATE NOT NULL DEFAULT CURRENT_DATE,
     end_time DATE,
     PRIMARY KEY(rent_id),
-    CONSTRAINT fk_clients
-        FOREIGN KEY(client_pid)
-            REFERENCES clients(client_pid),
-
+    CONSTRAINT fk_customers
+        FOREIGN KEY(customer_pid)
+            REFERENCES customers(customer_pid),
     CONSTRAINT fk_products
         FOREIGN KEY(product_id)
             REFERENCES products(product_id)
-)
+);
 
 
 INSERT INTO 
@@ -69,3 +68,21 @@ VALUES
     ('VideoGame', 2, 'Snake', 'old', 'j9f09ano291sa', 'Easy'),
     ('BoardGame', 1, 'Munchkin', 'card', 'da2d12fgrtyn', 'Medium'),
     ('BoardGame', 5, 'Chess', 'logic', 'asdcvgtre2213fvds', 'Easy');
+
+INSERT INTO
+    customers (customer_name, customer_surname, customer_pid, customer_type)
+VALUES
+    ('Jan', 'Matejko', '987654526', 'Bronze'),
+    ('Mariusz', 'Pudzianowski', '876567898', 'Gold'),
+    ('Robert', 'Kubica', '465458678', NULL),
+    ('Marcin', 'Prokop', '123456787', NULL),
+    ('Krzysztof', 'Krawczyk', '654218871', 'Silver');
+
+INSERT INTO 
+    addresses (customer_pid, city, street, house_number)
+VALUES
+    ('987654526', 'Łódź', 'al. Politechniki', '27'),
+    ('876567898', 'Biała Rawska', 'Sadowa', '1'),
+    ('465458678', 'Warszawa' ,'Emilii Plater', '15' ),
+    ('123456787', 'Łódź', 'Wróblewskiego', '5'),
+    ('654218871', 'Łódź', 'Wólczańska', '51a');

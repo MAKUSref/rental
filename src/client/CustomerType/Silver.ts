@@ -1,10 +1,10 @@
-import ClientType from "./ClientType";
+import CustomerType from "./CustomerType";
 
-const MAX_PRODUCTS_NUMBER = 15;
-const TYPE_NAME = 'Gold';
-const DISCOUNT = 0.5;
+const MAX_PRODUCTS_NUMBER = 10;
+const TYPE_NAME = 'Silver';
+const DISCOUNT = 0.75;
 
-class Gold extends ClientType {
+class Silver extends CustomerType {
   applyDiscount(price: number): number {
     return price * DISCOUNT;
   }
@@ -18,4 +18,4 @@ class Gold extends ClientType {
   }
 }
 
-export default Gold;
+export default Silver;
