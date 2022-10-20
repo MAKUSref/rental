@@ -4,14 +4,14 @@ import Product from "../product/Product";
 const SECONDS_IN_DAY = 86400;
 
 class Rent {
-  private _id: number;
-  private _beginTime: number;
-  private _endTime?: number;
+  private _rentId: number;
+  private _beginTime: Date;
+  private _endTime?: Date;
   private _client: Client;
   private _product: Product;
 
-  constructor(id: number, client: Client, product: Product, beginTime: number = Date.now()) {
-    this._id = id;
+  constructor(rentId: number, client: Client, product: Product, beginTime: Date = new Date()) {
+    this._rentId = rentId;
     this._client = client;
     this._product = product;
     this._beginTime = beginTime;
@@ -25,28 +25,26 @@ class Rent {
   }
 
   get rentDays(): number {
-    const timeDiffInMs = Date.now() - this._beginTime;
+    const timeDiffInMs = new Date().valueOf() - this._beginTime.valueOf();
     return timeDiffInMs / SECONDS_IN_DAY;
   }
 
   get beginTime(): Date {
-    return new Date(this._beginTime * 1000);
+    return this._beginTime;
   }
 
-  // get endTime(): number | void {
-  //   if (this._endTime) {
-  //     return Date.now();
-  //   }
-  // }
+  get rentId(): number {
+    return this._rentId;
+  }
 
   // setters
-  set endTime(time: number) {
+  set endTime(time: Date) {
     this._endTime = time;
   }
 
   // public
   endRent(): void {
-    this._endTime = Date.now();
+    this._endTime = new Date();
   }
 }
 

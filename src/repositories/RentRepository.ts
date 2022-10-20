@@ -4,7 +4,7 @@ import { Client } from "ts-postgres";
 import CustomerRepository from "./ClientRepository";
 import Customer from "../client/Customer";
 import Product from "../product/Product";
-import ProductRepository from "./ProductRepository";
+import ProductRepository, { ProductRow } from "./ProductRepository";
 
 type rent_id = number;
 type customer_pid = string;
@@ -28,8 +28,13 @@ class RentRepository {
   get(index: number): Rent | null {
     return this.items[index] ? this.items[index] : null;
   }
-  add(item: Rent): void {
-    this.items.push(item);
+  
+  static add(item: Rent): void {
+    const client = new Client({
+      database: "rental",
+      user: "postgres",
+      password: "postgres",
+    });
   }
   remove(item: Rent): void {
     this.items.filter((arrayItem) => arrayItem !== item);
@@ -47,7 +52,7 @@ class RentRepository {
     return new Promise((resolve, reject) => {
       client.query('SELECT * FROM rents;')
         .then(async (result) => {
-          console.log(result);
+          resolve(result.rows.length);
         })
         .catch((err) => {
           reject(err);
@@ -58,7 +63,7 @@ class RentRepository {
     });
   }
 
-  async getAll(): Promise<any> {
+  static async getAll(): Promise<Rent[]> {
     const client = new Client({
       database: "rental",
       user: "postgres",
@@ -66,7 +71,7 @@ class RentRepository {
     });
     await client.connect();
 
-    const rents = await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const query = `
         SELECT * FROM rents;
       `;
@@ -76,30 +81,39 @@ class RentRepository {
         .then(async (result) => {
           const rentsRows: RentRow[] = result.rows as RentRow[];
 
-          const preperedRents = rentsRows.map(async (rentRow: RentRow): Promise<any> => {
-            const client = await CustomerRepository.findByPersonalID(rentRow[1] as customer_pid);
-            console.log(rentRow[1]);
-            console.log(client);
+          const preperedRents = rentsRows.map(async (rentRow: RentRow) => {
+            const customer = await CustomerRepository.findByPersonalID(rentRow[1] as customer_pid);
+            const productsRawData = await ProductRepository.getAllRawData();
+
+            const productRawData = productsRawData.filter((product) => product[0] === rentRow[2])[0].slice(1) as ProductRow;
+            const product = ProductRepository.rowToProduct(productRawData) as Product;
             
-            // return new Rent();
-          } );
+            const rent = new Rent(rentRow[0], customer[0], product, new Date(rentRow[4]));
+
+            return rent;
+          });
+
+          Promise.all(preperedRents).then((rents) => {
+            resolve(rents);
+          });
         })
         .catch((err) => {
-          console.log(err);
+          reject(err);
         })
         .finally(() => {
           client.end();
         });
     });
-
-    // console.log(rents);
-
-    // return this.items;
-    return new Promise(() => {});
   }
 
-  findBy(filterFunction: (item: Rent) => boolean) {
-    return this.items.filter(filterFunction);
+  static async findBy(filterFunction: (item: Rent) => boolean): Promise<Rent[]> {
+    const rents = await RentRepository.getAll();
+
+    return rents.filter(filterFunction);
+  }
+
+  static async findById(id: rent_id): Promise<Rent[]> {
+    return RentRepository.findBy((rent: Rent) => rent.rentId === id);
   }
 }
 

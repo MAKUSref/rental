@@ -8,11 +8,12 @@ import CustomerRepository from "./src/repositories/ClientRepository";
 import ProductRepository from "./src/repositories/ProductRepository";
 import RentRepository from "./src/repositories/RentRepository";
 
-const main = async () => {
-  const a = new Address('asds', 'ads', 'dsa')
-  const c = new Customer('jan', 'aaaaa', 'poiuytyuio11', a);
 
 
-rent.getAll();
+// RentRepository.getAll().then((rents) => {
+//   console.log(rents);
+// })
+
+
 
 // RentRepository.size();
