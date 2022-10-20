@@ -161,6 +161,22 @@ class ProductRepository {
     static async findBySerialNumber(number: string) {
         return this.findBy(product => product.serialNumber === number)
     }
+
+    static async getAllRawData(): Promise<ProductRowExtended[]> {
+        const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
+        await client.connect();
+        return new Promise((resolve, reject) => {
+            client.query('SELECT * FROM products;')
+                .then(results => {
+                    resolve(results.rows as ProductRowExtended[]);
+                }).catch((e) => {
+                    reject(`error connecting to db: ${e}`)
+                })
+                .finally(() => {
+                    client.end();
+                })
+        })
+    }
 }
 
 export default ProductRepository;
