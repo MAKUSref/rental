@@ -12,12 +12,29 @@ const main = async () => {
   const c = new Customer('jan', 'aaaaa', 'poiuytyuio11', a);
 
 
-  await CustomerRepository.add(c);
-  let x = await CustomerRepository.findByPersonalID(c.pid);
-  console.log(x);
-  await CustomerRepository.remove(c);
-  x = await CustomerRepository.findByPersonalID(c.pid);
-  console.log(x);
+  // await CustomerRepository.add(c);
+  // let x = await CustomerRepository.findByPersonalID(c.pid);
+  // console.log(x);
+  // await CustomerRepository.remove(c);
+  // x = await CustomerRepository.findByPersonalID(c.pid);
+  // console.log(x);
+
+
+  let y = await ProductRepository.get(1);
+  console.log(y);
+
+  await ProductRepository.remove(y).then(()=>{
+    console.log('usuniete');
+    
+  });
+
+  y = await ProductRepository.get(1);
+  console.log(y);
+
+
+
+  
+
 }
 
 main();

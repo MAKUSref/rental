@@ -1,4 +1,5 @@
 import Product from "../product/Product";
+import { Pool } from 'postgres-pool';
 import { IRepository } from "./Repository.type";
 import { Client } from "ts-postgres";
 import Movie from "../product/Movie";
@@ -14,7 +15,7 @@ type ProductRow = [string, number, string, string, string, string | null]
 class ProductRepository {
     items: Product[] = [];
 
-    rowToProduct(row: ProductRow): Product | undefined {
+    static rowToProduct(row: ProductRow): Product | undefined {
         let newOb: Product | undefined;
         if (row[0] === 'Movie') {
             newOb = new Movie(row[4], row[1], row[2], row[3])
@@ -31,24 +32,24 @@ class ProductRepository {
         return newOb;
     }
 
-    productToRow(product: Product): ProductRow {
+    static productToRow(product: Product): ProductRow {
 
         return [product.constructor.name, product.basePrice, product.title, product.category, product.serialNumber, null]
     }
 
-    gameToRow(game: Game): ProductRow {
+    static gameToRow(game: Game): ProductRow {
         return [game.constructor.name, game.basePrice, game.title, game.category, game.serialNumber, game.difficultyLevel.toString()]
     }
 
-    async get(index: number): Promise<Product> {
+    static async get(index: number): Promise<Product> {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         await client.connect();
         return new Promise((resolve, reject) => {
-            client.query('SELECT * FROM products WHERE id = $1;', [index])
+            client.query('SELECT * FROM products WHERE product_id = $1;', [index])
                 .then(results => {
-                    console.log(results);
-
-                    let productObject = this.rowToProduct(results.rows[0].slice(1) as ProductRow);
+                    if(results.rows.length < 1)
+                    reject('no item found')
+                    let productObject = this.rowToProduct(results?.rows[0]?.slice(1) as ProductRow);
                     if (productObject) {
                         resolve(productObject);
                     } else {
@@ -64,7 +65,7 @@ class ProductRepository {
 
     }
 
-    async add(item: Product): Promise<void> {
+    static async add(item: Product): Promise<void> {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         let values: ProductRow;
 
@@ -90,11 +91,33 @@ class ProductRepository {
     }
 
 
-    remove(item: Product): void {
-        this.items.filter(arrayItem => arrayItem !== item)
+    static async remove(item: Product): Promise<void> {
+        const pool = new Pool({host: 'localhost', database: 'rental', user: 'postgres', password: 'postgres' })
+        const query1 = `
+            SELECT product_id FROM products WHERE serialNumber = $1;
+            `
+        const query2 = `
+            DELETE FROM products WHERE product_id = $1;
+            
+            `        
+        try{
+            await pool.query('BEGIN;');
+            let id = await pool.query(query1, [item.serialNumber]);
+
+            id =  id.rows[0].product_id;
+            console.log([id]);
+            
+            await pool.query(query2, [id]);
+            await pool.query('COMMIT;');
+
+        }catch{
+            
+            await pool.query('ROLLBACK;');
+        }
+        await pool.end();
 
     }
-    async size(): Promise<number> {
+    static async size(): Promise<number> {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         await client.connect();
         return new Promise((resolve, reject) => {
@@ -109,7 +132,7 @@ class ProductRepository {
                 })
         })
     }
-    async getAll(): Promise<Product[]> {
+    static async getAll(): Promise<Product[]> {
         const client = new Client({ database: 'rental', user: 'postgres', password: 'postgres' });
         await client.connect();
         return new Promise((resolve, reject) => {
@@ -128,13 +151,13 @@ class ProductRepository {
         })
     }
 
-    async findBy(filterFunction: (item: Product) => boolean) {
+    static async findBy(filterFunction: (item: Product) => boolean) {
         this.getAll().then(allProducts=>{
             return allProducts.filter(filterFunction)
         })
     }
 
-    async findBySerialNumber(number: string) {
+    static async findBySerialNumber(number: string) {
         return this.findBy(product => product.serialNumber === number)
     }
 }
