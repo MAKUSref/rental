@@ -38,6 +38,14 @@ class Rent {
     return this._rentId;
   }
 
+  get client() {
+    return this._client;
+  }
+
+  get product() {
+    return this._product;
+  }
+
   // setters
   set endTime(time: Date) {
     this._endTime = time;
