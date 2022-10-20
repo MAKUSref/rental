@@ -1,4 +1,4 @@
-import Client from "../customer/Customer";
+import Customer from "../customer/Customer";
 import Product from "../product/Product";
 
 const SECONDS_IN_DAY = 86400;
@@ -7,19 +7,20 @@ class Rent {
   private _rentId: number;
   private _beginTime: Date;
   private _endTime?: Date;
-  private _client: Client;
+  private _customer: Customer;
   private _product: Product;
 
-  constructor(rentId: number, client: Client, product: Product, beginTime: Date = new Date()) {
+  constructor(rentId: number, customer: Customer, product: Product, beginTime: Date = new Date(), endTime = undefined) {
     this._rentId = rentId;
-    this._client = client;
+    this._customer = customer;
     this._product = product;
     this._beginTime = beginTime;
+    this._endTime = endTime;
   }
 
   // getters
   get rentCost(): number {
-    return this._client.applyDiscount(
+    return this._customer.applyDiscount(
       this._product.getActualPrice?.() ?? this._product.basePrice
     );
   }
@@ -37,6 +38,14 @@ class Rent {
     return this._rentId;
   }
 
+  get customer() {
+    return this._customer;
+  }
+
+  get product() {
+    return this._product;
+  }
+
   // setters
   set endTime(time: Date) {
     this._endTime = time;
@@ -45,6 +54,10 @@ class Rent {
   // public
   endRent(): void {
     this._endTime = new Date();
+  }
+
+  getEndTime(): Date | undefined {
+    return this._endTime;
   }
 }
 

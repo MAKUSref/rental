@@ -20,6 +20,9 @@ class CustomerManager{
     findAllCustomers(){
         CustomerRepository.getAll();
     }
+    changeCustomerType(c: Customer, t: CustomerType){
+        CustomerRepository.setCustomerType(c, t);
+    }
 }
 
 export default CustomerManager
