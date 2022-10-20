@@ -128,13 +128,13 @@ class ProductRepository {
         })
     }
 
-    findBy(filterFunction: (item: Product) => boolean) {
+    async findBy(filterFunction: (item: Product) => boolean) {
         this.getAll().then(allProducts=>{
             return allProducts.filter(filterFunction)
         })
     }
 
-    findBySerialNumber(number: string) {
+    async findBySerialNumber(number: string) {
         return this.findBy(product => product.serialNumber === number)
     }
 }

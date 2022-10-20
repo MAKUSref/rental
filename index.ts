@@ -32,7 +32,7 @@ const pr = new ProductRepository();
 const cr = new CustomerRepository();
 
 const a = new Address('asds', 'ads', 'dsa')
-const c = new Customer('jan', 'aaaaa', 'poiuytyuio', a);
+const c = new Customer('jan', 'aaaaa', 'poiuytyuio12', a);
 
 // pr.get(1).then((x)=>{
 //   let y = x as Movie;
@@ -43,5 +43,13 @@ const c = new Customer('jan', 'aaaaa', 'poiuytyuio', a);
   // })
 // console.log(c.CustomerType?.constructor.name);
 
-  cr.add(c);
+  // cr.add(c).then(()=>{
+  //   console.log('dodane');
+    
+  // }).catch(e=>console.error(e));
+
+
+cr.remove(c).catch(r=>{
+  console.log(r);
+})
 
