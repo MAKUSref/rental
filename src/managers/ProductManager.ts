@@ -8,25 +8,30 @@ import ProductRepository from "../repositories/ProductRepository";
 
 class ProductManager{
 
-    products = new ProductRepository();
-
     registerMusic( serialNumber: string, title: string, category: string, basePrice: number){
-        this.products.add(new Music(serialNumber, basePrice, title, category))
+        ProductRepository.add(new Music(serialNumber, basePrice, title, category))
     }
 
     registerMovie( serialNumber: string, title: string, category: string, basePrice: number){
-        this.products.add(new Movie(serialNumber, basePrice, title, category))
+        ProductRepository.add(new Movie(serialNumber, basePrice, title, category))
     }
 
     registerVideodGame( serialNumber: string, title: string, category: string, basePrice: number, difficultyLevel: DifficultyLevel ){
-        this.products.add(new VideoGame(serialNumber, basePrice, title, category, difficultyLevel))
+        ProductRepository.add(new VideoGame(serialNumber, basePrice, title, category, difficultyLevel))
     }
     registerBoardGame( serialNumber: string, title: string, category: string, basePrice: number, difficultyLevel: DifficultyLevel ){
-        this.products.add(new BoardGame(serialNumber, basePrice, title, category, difficultyLevel))
+        ProductRepository.add(new BoardGame(serialNumber, basePrice, title, category, difficultyLevel))
     }
     unregisterProduct(product: Product){
-        this.products.remove(product);
+        ProductRepository.remove(product);
     }
+    async findProduct(filterFunction: (item: Product) => boolean){
+        return  await ProductRepository.findBy(filterFunction);
+    }
+    async findAllProducts(){
+        return await ProductRepository.getAll();
+    }
+
 }
 
 export default ProductManager;

@@ -7,13 +7,14 @@ import Default from "../customer/CustomerType/Default";
 import Gold from "../customer/CustomerType/Gold";
 import Silver from "../customer/CustomerType/Silver";
 import { IRepository } from "./Repository.type";
+import CustomerType from "../customer/CustomerType/CustomerType";
 
 
 type Name = string;
 type Surname = string;
 type PID = string;
-type CustomerType = 'Gold' | 'Silver' | 'Bronze' | 'Default' ;
-type CustomerRow = [Name, Surname, PID, CustomerType];
+type CustomerTypeString = 'Gold' | 'Silver' | 'Bronze' | 'Default' ;
+type CustomerRow = [Name, Surname, PID, CustomerTypeString];
 
 type City = string;
 type Street = string;
@@ -29,7 +30,21 @@ const CustomerTypesMap = {
 }
 
 class CustomerRepository {
-    items: Customer[] = [];
+    static setCustomerType(c: Customer, t: CustomerType) {
+        const query = 'UPDATE customers SET customer_type = $1 WHERE customer_pid = $2;'
+        const pool = new Pool({host: 'localhost', database: 'rental', user: 'postgres', password: 'postgres' })
+        const args = [t, c.pid]
+        try{
+            pool.query('BEGIN;');
+            pool.query(query, args);
+            pool.query('COMMIT;');
+
+        }catch{
+            pool.query('ROLLBACK;');
+        }
+        pool.end();
+        
+    }
 
     static rowToCustomer(customerRow: CustomerRow, address: Address): Customer {
         const newCustomer = new Customer(customerRow[0], customerRow[1], customerRow[2], address)
@@ -42,7 +57,7 @@ class CustomerRepository {
     }
 
     static customerToRow(customer: Customer){
-        const cr: CustomerRow = [customer.name, customer.surname, customer.pid, customer.CustomerType?.constructor.name as CustomerType]
+        const cr: CustomerRow = [customer.name, customer.surname, customer.pid, customer.CustomerType?.constructor.name as CustomerTypeString]
         const ar: AddressRow = [customer.pid, customer.address.city, customer.address.street, customer.address.number]
         return [cr, ar]
     }
