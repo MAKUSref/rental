@@ -41,12 +41,13 @@ class RentRepository {
           ($1, $2, $3, $4);
     `;
 
-    const getLastProductId = `SELECT rent_id FROM rents ORDER BY rent_id DESC LIMIT 1;`;
+    const getProductId = `SELECT product_id FROM products WHERE serialNumber = $1;`;
+
 
     try {
       pool.query('BEGIN;');
-      const res = await pool.query(getLastProductId);
-      const index = res.rows[0].product_id + 1;
+      const res = await pool.query(getProductId);
+      const index = res.rows[0].product_id;
       pool.query(query, [rent.customer.pid, index, rent.rentCost, rent.beginTime]);
       pool.query('COMMIT;');
     } catch {
